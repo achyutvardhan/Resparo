@@ -1,4 +1,4 @@
-package com.resparo.dev.enums;
+package com.resparo.dev.domain;
 
 public enum DatabaseType {
     MYSQL,

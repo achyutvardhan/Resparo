@@ -1,6 +1,6 @@
-package com.resparo.dev.model;
+package com.resparo.dev.util;
 
-import com.resparo.dev.enums.DatabaseType;
+import com.resparo.dev.domain.DatabaseType;
 
 public final class JdbcUrlBuilder {
     private JdbcUrlBuilder() {

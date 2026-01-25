@@ -9,8 +9,8 @@ import org.springframework.shell.command.annotation.Command;
 import org.springframework.shell.command.annotation.Option;
 import org.springframework.stereotype.Component;
 import com.resparo.dev.config.ConnectionRegistry;
-import com.resparo.dev.enums.DatabaseType;
-import com.resparo.dev.model.JdbcUrlBuilder;
+import com.resparo.dev.domain.DatabaseType;
+import com.resparo.dev.util.JdbcUrlBuilder;
 
 @Component
 @Command(description = "Connect to you preffered database", group = "Database Connection")
