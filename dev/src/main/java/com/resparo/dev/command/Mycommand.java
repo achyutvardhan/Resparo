@@ -1,4 +1,4 @@
-package com.resparo.dev;
+package com.resparo.dev.command;
 
 import org.springframework.shell.command.annotation.Command;
 import org.springframework.shell.command.annotation.Option;
