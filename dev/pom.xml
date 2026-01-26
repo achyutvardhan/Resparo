@@ -46,6 +46,12 @@
 			<version>42.7.8</version>
 			<scope>compile</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.zeroturnaround</groupId>
+			<artifactId>zt-exec</artifactId>
+			<version>1.12</version>
+			<scope>compile</scope>
+		</dependency>
 		<!-- <dependency>
    		<groupId>org.mongodb</groupId>
 			<artifactId>mongodb-driver-sync</artifactId>
