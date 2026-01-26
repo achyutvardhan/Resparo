@@ -13,6 +13,7 @@ public class ConnectionProvider {
     @Autowired
     private ConnectionRegistry registry;
 
+
     private Connection getConnection() {
         return registry.get();
     }
@@ -33,14 +34,15 @@ public class ConnectionProvider {
     }
 
     public String getHost() {
-        try (Connection conn = getConnection()) {
+        try {
+            Connection conn = getConnection();
             String url = conn.getMetaData().getURL();
 
             URI uri = URI.create(url.replace("jdbc:", ""));
             return uri.getHost();
 
         } catch (Exception e) {
-            return e.getMessage();
+            throw new RuntimeException("Port not found Exception");
         }
     }
 
@@ -51,7 +53,7 @@ public class ConnectionProvider {
             return uri.getPort();
 
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Port not found Exception");
         }
     }
 
