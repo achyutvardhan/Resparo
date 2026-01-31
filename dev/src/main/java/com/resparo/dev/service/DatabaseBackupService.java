@@ -21,18 +21,18 @@ public class DatabaseBackupService {
         try {
             String output = "";
             String user = connectionProvider.getUserName();
+            Path backupPath = FileNameProvider.provideFileName(user, databaseType, databaseName);
             if (backupTypes == BackupTypes.FULL && connectionProvider.isConnected()) {
                 if (databaseType == DatabaseType.POSTGRESQL) {
-                    Path backupPath = FileNameProvider.provideFileName(user, databaseType, databaseName);
                     output = new ProcessExecutor()
                             .command("pg_dump", "-Fc", "-h", "localhost",
                                     "-U", user, "-f", backupPath.toString(), databaseName)
-                            .readOutput(true)
+                            .redirectOutput(System.out)
+                            .redirectError(System.err)
                             .execute()
                             .getExitValue() == 0 ? "Backup successful" : "Backup failed";
 
                 } else if (databaseType == DatabaseType.MYSQL) {
-                    Path backupPath = FileNameProvider.provideFileName(user, databaseType, databaseName);
                     String[] username = user.split("@");
                     output = new ProcessExecutor()
                             .command("mysqldump",
@@ -41,17 +41,37 @@ public class DatabaseBackupService {
                                     "-p",
                                     databaseName)
                             .redirectOutput(new FileOutputStream(backupPath.toFile()))
+                            .redirectOutput(System.out)
                             .redirectError(System.err)
-                            .readOutput(true)
                             .execute()
                             .getExitValue() == 0 ? "Backup successful" : "Backup failed";
                 } else {
                     throw new Exception();
                 }
             } else if (backupTypes == BackupTypes.DIFFERENTIAL) {
-
+                switch (databaseType) {
+                    case POSTGRESQL -> {
+                        output = new ProcessExecutor()
+                                        .command("pgbackrest", "--stanza=main" , "backup" , "--type=diff")
+                                        .redirectOutput(System.out)
+                                        .redirectError(System.err) 
+                                        .execute()
+                                        .getExitValue() == 0 ? "Backup successful" : "Backup failed";   
+                    }
+                    case MYSQL -> {}
+                };
             } else {
-
+                switch (databaseType) {
+                    case POSTGRESQL -> {
+                        output = new ProcessExecutor()
+                                        .command("pgbackrest", "--stanza=main" , "backup" , "--type=incr")
+                                        .redirectOutput(System.out)
+                                        .redirectError(System.err) 
+                                        .execute()
+                                        .getExitValue() == 0 ? "Backup successful" : "Backup failed";   
+                    }
+                    case MYSQL -> {}
+                };
             }
             return output;
         } catch (Exception e) {
