@@ -14,7 +14,7 @@ public final class JdbcUrlBuilder {
         return switch (dbtype) {
             case MYSQL -> "jdbc:mysql://" + host + ":" + port + "/" + DatabaseName;
             case POSTGRESQL -> "jdbc:postgresql://" + host + ":" + port + "/" + DatabaseName;
-            case MONGODB -> "jdbc:mongodb://" + host + ":" + port + "/" + DatabaseName;
+            // case MONGODB -> "jdbc:mongodb://" + host + ":" + port + "/" + DatabaseName;
         };
     }
 }
