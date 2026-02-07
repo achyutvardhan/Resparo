@@ -6,16 +6,19 @@ import java.nio.file.Path;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.zeroturnaround.exec.ProcessExecutor;
+import org.zeroturnaround.exec.ProcessOutput;
 
 import com.resparo.dev.domain.BackupTypes;
 import com.resparo.dev.domain.DatabaseType;
 import com.resparo.dev.util.ConnectionProvider;
 import com.resparo.dev.util.FileNameProvider;
+import com.resparo.dev.util.PgbackrestInstalled;
 
 @Service
 public class DatabaseBackupService {
     @Autowired
     private ConnectionProvider connectionProvider;
+    
 
     public String backupDb(BackupTypes backupTypes, DatabaseType databaseType, String databaseName) {
         try {
@@ -45,30 +48,40 @@ public class DatabaseBackupService {
                             .redirectError(System.err)
                             .execute()
                             .getExitValue() == 0 ? "Backup successful" : "Backup failed";
-                } else {
+                } else { 
                     throw new Exception();
                 }
             } else if (backupTypes == BackupTypes.DIFFERENTIAL) {
                 switch (databaseType) {
                     case POSTGRESQL -> {
+                        if(PgbackrestInstalled.checkInstallation())
                         output = new ProcessExecutor()
                                         .command("pgbackrest", "--stanza=main" , "backup" , "--type=diff")
                                         .redirectOutput(System.out)
                                         .redirectError(System.err) 
                                         .execute()
-                                        .getExitValue() == 0 ? "Backup successful" : "Backup failed";   
+                                        .getExitValue() == 0 ? "Backup successful" : "Backup failed";
+                        else{
+                           InstalltionBackupService installtionBackupService = new InstalltionBackupService(databaseType);
+                           installtionBackupService.afterInstalltionMannualForPgBackrest();
+                        }
                     }
                     case MYSQL -> {}
                 };
             } else {
                 switch (databaseType) {
                     case POSTGRESQL -> {
+                        if(PgbackrestInstalled.checkInstallation())
                         output = new ProcessExecutor()
                                         .command("pgbackrest", "--stanza=main" , "backup" , "--type=incr")
                                         .redirectOutput(System.out)
                                         .redirectError(System.err) 
                                         .execute()
                                         .getExitValue() == 0 ? "Backup successful" : "Backup failed";   
+                        else{
+                           InstalltionBackupService installtionBackupService = new InstalltionBackupService(databaseType);
+                           installtionBackupService.afterInstalltionMannualForPgBackrest();
+                        }
                     }
                     case MYSQL -> {}
                 };
