@@ -8,12 +8,12 @@ import org.zeroturnaround.exec.ProcessExecutor;
 import com.resparo.dev.util.interfaces.DatabaseInstallation;
 
 @Component
-public class PgbackrestInstalled implements DatabaseInstallation{
+public class PostgresInstalled implements DatabaseInstallation {
     @Override
     public  boolean checkInstallation() {
         try {
             new ProcessExecutor()
-                    .command("pgbackrest", "--version")
+                    .command("psql", "--version")
                     .readOutput(true)
                     .execute();
 
@@ -29,4 +29,3 @@ public class PgbackrestInstalled implements DatabaseInstallation{
         }
     }
 }
-

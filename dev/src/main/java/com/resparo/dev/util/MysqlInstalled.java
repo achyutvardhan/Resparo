@@ -8,12 +8,12 @@ import org.zeroturnaround.exec.ProcessExecutor;
 import com.resparo.dev.util.interfaces.DatabaseInstallation;
 
 @Component
-public class PgbackrestInstalled implements DatabaseInstallation{
+public class MysqlInstalled implements DatabaseInstallation{
     @Override
-    public  boolean checkInstallation() {
+    public boolean checkInstallation(){
         try {
             new ProcessExecutor()
-                    .command("pgbackrest", "--version")
+                    .command("mysql", "--version")
                     .readOutput(true)
                     .execute();
 
@@ -29,4 +29,3 @@ public class PgbackrestInstalled implements DatabaseInstallation{
         }
     }
 }
-
