@@ -1,8 +1,6 @@
 package com.resparo.dev.command;
 
-import org.jline.reader.LineReader;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.shell.command.annotation.Command;
 import org.springframework.shell.command.annotation.Option;
 import org.springframework.stereotype.Component;
@@ -14,9 +12,6 @@ import com.resparo.dev.util.ListDatabaseBackupFile;
 @Component
 @Command(group = "Restore", description = "Full Restoration of Databases")
 public class DatabaseFullRestore {
-    @Autowired
-    @Lazy
-    private LineReader lineReader;
 
     @Autowired
     private FullRestoreDatabaseService fullRestoreDatabaseService;
