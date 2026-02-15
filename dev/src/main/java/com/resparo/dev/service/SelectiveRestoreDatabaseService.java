@@ -1,9 +1,12 @@
 package com.resparo.dev.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.zeroturnaround.exec.ProcessExecutor;
 
 import com.resparo.dev.domain.DatabaseType;
+import com.resparo.dev.util.StartDatabase;
+import com.resparo.dev.util.StopDatabase;
 
 @Service
 public class SelectiveRestoreDatabaseService {
@@ -48,6 +51,32 @@ public class SelectiveRestoreDatabaseService {
                 }
                 case MYSQL -> {
                     output = "Selective Schema Restoration is not available for MYSQL";
+                }
+            }
+            return output;
+        } catch (Exception e) {
+            return e.getMessage();
+        }
+    }
+
+    public String retorePITR(DatabaseType dbTye, String time, String stanza) {
+        try {
+            String output = "";
+            switch (dbTye) {
+                case POSTGRESQL -> {
+                    System.out.println(StopDatabase.stop("postgresql@18"));
+                    output = new ProcessExecutor()
+                            .command("pgbackrest", "--stanza=" + stanza, "--type=time",
+                                    "--target=" + time, "restore")
+                            .redirectOutput(System.out)
+                            .redirectError(System.err)
+                            .execute()
+                            .getExitValue() == 0 ? "PITR Restore successful" : "PITR Restore failed";
+                    System.out.println(StartDatabase.start("postgresql@18"));
+
+                }
+                case MYSQL -> {
+                    output = "PITR  Restoration is not available for MYSQL";
                 }
             }
             return output;

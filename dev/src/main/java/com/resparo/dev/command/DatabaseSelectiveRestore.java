@@ -25,7 +25,8 @@ public class DatabaseSelectiveRestore {
             @Option(longNames = "username", required = true) String Username,
             @Option(longNames = "table-name", required = true) String tableName) {
         String backupFilePath = listDatabaseBackupFile.returnPath(Username, dataBaseName);
-        return selectiveRestoreDatabaseService.tableRestoration(dataBaseName, dbType ,Username, tableName, backupFilePath);
+        return selectiveRestoreDatabaseService.tableRestoration(dataBaseName, dbType, Username, tableName,
+                backupFilePath);
     }
 
     @Command(description = "Schema Restoration of Databases", group = "selective restore")
@@ -35,6 +36,15 @@ public class DatabaseSelectiveRestore {
             @Option(longNames = "username", required = true) String Username,
             @Option(longNames = "schema-name", required = true) String schemaName) {
         String backupFilePath = listDatabaseBackupFile.returnPath(Username, dataBaseName);
-        return selectiveRestoreDatabaseService.schemaRestoration(dataBaseName, Username, dbType ,schemaName, backupFilePath);
+        return selectiveRestoreDatabaseService.schemaRestoration(dataBaseName, Username, dbType, schemaName,
+                backupFilePath);
+    }
+    @Command(description = "PgBackRest Point in time Restoration of Postgresql Databases", group = "selective restore")
+    public String restorePITR(
+            @Option(longNames = "type", required = true, defaultValue = "POSTGRESQL") DatabaseType dbType,
+            @Option(longNames = "time", required = true) String time,
+            @Option(longNames = "stanza", required = true) String stanza
+        ) {
+        return selectiveRestoreDatabaseService.retorePITR(dbType, time , stanza);
     }
 }

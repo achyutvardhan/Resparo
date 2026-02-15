@@ -53,4 +53,12 @@ public class DatabaseFullRestore {
         String backupFilePath = listDatabaseBackupFile.returnPath(Username, dataBaseName);
         return fullRestoreDatabaseService.dropAndRecreateDb(Username, dataBaseName, dbType , backupFilePath);
     }
+
+    @Command(description = "PgBackRest Restoration of Postgresql Databases", group = "full restore")
+    public String restorePgBackRest(
+            @Option(longNames = "stanza", required = true) String stanza
+        ) {
+        return fullRestoreDatabaseService.retorePgbackrest(stanza);
+    }
+
 }

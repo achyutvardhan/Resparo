@@ -6,6 +6,8 @@ import org.springframework.stereotype.Service;
 import org.zeroturnaround.exec.ProcessExecutor;
 
 import com.resparo.dev.domain.DatabaseType;
+import com.resparo.dev.util.StartDatabase;
+import com.resparo.dev.util.StopDatabase;
 
 @Service
 public class FullRestoreDatabaseService {
@@ -133,6 +135,23 @@ public class FullRestoreDatabaseService {
                     }
                 }
             }
+            return output;
+        } catch (Exception e) {
+            return e.getMessage();
+        }
+    }
+
+    public String retorePgbackrest(String stanza) {
+        try {
+            String output;
+            System.out.println(StopDatabase.stop("postgresql@18"));
+            output = new ProcessExecutor()
+                    .command("pgbackrest", "--stanza=" + stanza, "restore")
+                    .redirectOutput(System.out)
+                    .redirectError(System.err)
+                    .execute()
+                    .getExitValue() == 0 ? "pgbackrest Restore successful" : "pgbackrest Restore failed";
+            System.out.println(StartDatabase.start("postgresql@18"));
             return output;
         } catch (Exception e) {
             return e.getMessage();
