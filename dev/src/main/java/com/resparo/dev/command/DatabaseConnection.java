@@ -16,7 +16,7 @@ public class DatabaseConnection {
     private DatabaseConnectionService connectionService;
 
     @Command(description = "Connect to database" , group = "Database")
-    public String ConnectDB(
+    public String connectDB(
             @Option(longNames = "host", required = true, defaultValue = "localhost") String host,
             @Option(longNames = "port", required = true) String port,
             @Option(longNames = "password", required = true) String password,

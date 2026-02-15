@@ -11,6 +11,7 @@ import com.resparo.dev.domain.BackupTypes;
 import com.resparo.dev.domain.DatabaseType;
 import com.resparo.dev.util.ConnectionProvider;
 import com.resparo.dev.util.FileNameProvider;
+import com.resparo.dev.util.PgbackrestBackupInstallation;
 import com.resparo.dev.util.PgbackrestInstalled;
 
 @Service

@@ -1,14 +1,16 @@
-package com.resparo.dev.service;
+package com.resparo.dev.util;
 
+import org.springframework.stereotype.Service;
 import org.zeroturnaround.exec.ProcessExecutor;
 
 import com.resparo.dev.domain.DatabaseType;
 import com.resparo.dev.domain.OperatingSystem;
-import com.resparo.dev.util.OsdetectionProvider;
 
-public class DatabseInstalltionService {
 
-    public DatabseInstalltionService(DatabaseType dbtype) {
+
+public class DatabseInstalltion{
+
+    public DatabseInstalltion(DatabaseType dbtype) {
         try {
             OperatingSystem os = OsdetectionProvider.getOS();
             switch (dbtype) {

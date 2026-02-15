@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.resparo.dev.config.ConnectionRegistry;
 import com.resparo.dev.domain.DatabaseType;
+import com.resparo.dev.util.DatabseInstalltion;
 import com.resparo.dev.util.JdbcUrlBuilder;
 import com.resparo.dev.util.MysqlInstalled;
 import com.resparo.dev.util.PostgresInstalled;
@@ -30,7 +31,7 @@ public class DatabaseConnectionService {
             }
             if (dbType == DatabaseType.MYSQL && !mysqlInstalled.checkInstallation()
                     || dbType == DatabaseType.POSTGRESQL && !postgresInstalled.checkInstallation())
-                new DatabseInstalltionService(dbType);
+                new DatabseInstalltion(dbType);
 
             String jdbcUrl = JdbcUrlBuilder.builder(dbType, host, port, dataBaseName);
             Connection connection = DriverManager.getConnection(jdbcUrl, username, password);
