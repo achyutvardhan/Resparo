@@ -18,7 +18,8 @@ public final class FileNameProvider {
                     yield Paths.get(baseDir, fileName);
                 }
                 case MYSQL -> {
-                     String fileName = user+"_"+databaseName + "_" + System.currentTimeMillis() + ".sql";
+                    String[] username = user.split("@");
+                     String fileName = username[0]+"_"+databaseName + "_" + System.currentTimeMillis() + ".sql";
                     yield Paths.get(baseDir, fileName);
                 }
             };

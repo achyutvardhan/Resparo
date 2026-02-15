@@ -14,7 +14,7 @@ public class DatabaseConnection {
 
     @Autowired
     private DatabaseConnectionService connectionService;
-
+    // .cnf file implementation
     @Command(description = "Connect to database" , group = "Database")
     public String connectDB(
             @Option(longNames = "host", required = true, defaultValue = "localhost") String host,

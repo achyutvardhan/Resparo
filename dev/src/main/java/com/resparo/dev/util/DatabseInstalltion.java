@@ -1,6 +1,5 @@
 package com.resparo.dev.util;
 
-import org.springframework.stereotype.Service;
 import org.zeroturnaround.exec.ProcessExecutor;
 
 import com.resparo.dev.domain.DatabaseType;
