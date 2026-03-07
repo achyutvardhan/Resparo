@@ -1,6 +1,8 @@
 package com.resparo.dev.service;
 
 import java.io.FileInputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import org.springframework.stereotype.Service;
 import org.zeroturnaround.exec.ProcessExecutor;
@@ -143,16 +145,28 @@ public class FullRestoreDatabaseService {
 
     public String retorePgbackrest(String stanza) {
         try {
-            String output;
             System.out.println(StopDatabase.stop("postgresql@18"));
-            output = new ProcessExecutor()
-                    .command("pgbackrest", "--stanza=" + stanza, "restore")
+            // Thread.sleep(5000);
+            int restoreExit = new ProcessExecutor()
+                    .command("pgbackrest", "--stanza=" + stanza, "--delta", "restore")
                     .redirectOutput(System.out)
                     .redirectError(System.err)
                     .execute()
-                    .getExitValue() == 0 ? "pgbackrest Restore successful" : "pgbackrest Restore failed";
+                    .getExitValue();
+
+            if (restoreExit != 0) {
+                throw new RuntimeException("pgbackrest restore failed");
+            }
+
+            // 3. Fix the bare path written by pgbackrest into postgresql.auto.conf
+            String autoConf = "/opt/homebrew/var/postgresql@18/postgresql.auto.conf";
+            String content = Files.readString(Path.of(autoConf));
+            content = content.replace(
+                    "restore_command = 'pgbackrest",
+                    "restore_command = '/opt/homebrew/bin/pgbackrest");
+            Files.writeString(Path.of(autoConf), content);
             System.out.println(StartDatabase.start("postgresql@18"));
-            return output;
+            return "pgbackrest restore successfull";
         } catch (Exception e) {
             return e.getMessage();
         }

@@ -29,6 +29,7 @@
 	<properties>
 		<java.version>21</java.version>
 		<spring-shell.version>3.4.1</spring-shell.version>
+		<aws.sdk.version>2.42.3</aws.sdk.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -86,6 +87,10 @@
 			<artifactId>spring-shell-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>software.amazon.awssdk</groupId>
+			<artifactId>s3</artifactId>
+    	</dependency>
 	</dependencies>
 	<dependencyManagement>
 		<dependencies>
@@ -96,6 +101,13 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
+			<dependency>
+				<groupId>software.amazon.awssdk</groupId>
+				<artifactId>bom</artifactId>
+				<version>${aws.sdk.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+        	</dependency>
 		</dependencies>
 	</dependencyManagement>
 

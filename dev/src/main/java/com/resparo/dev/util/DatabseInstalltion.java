@@ -69,17 +69,17 @@ public class DatabseInstalltion{
                     switch (os) {
                         case MAC -> {
                             new ProcessExecutor()
-                                    .command("brew", "install", "postgresql")
+                                    .command("brew", "install", "postgresql@18")
                                     .redirectOutput(System.out)
                                     .redirectError(System.err)
                                     .execute();
                             System.out.println("postgresql installed successful");
                         }
                         case WINDOWS -> {
-                            System.out.println("Manually install pgbackrest");
+                            System.out.println("Manually install postgresql");
                         }
                         case LINUX -> {
-                            new ProcessExecutor()
+                            new ProcessExecutor() 
                                     .command("sudo", "apt", "update")
                                     .redirectOutput(System.out)
                                     .redirectError(System.err)

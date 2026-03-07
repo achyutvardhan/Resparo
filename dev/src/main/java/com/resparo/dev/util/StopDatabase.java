@@ -1,12 +1,17 @@
 package com.resparo.dev.util;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
+
+import org.springframework.scheduling.annotation.Async;
 import org.zeroturnaround.exec.ProcessExecutor;
 
 import com.resparo.dev.domain.OperatingSystem;
 
 public final class StopDatabase {
 
-    public static String stop(String service) {
+    @Async
+    public static Future<String> stop(String service) {
         OperatingSystem os = OsdetectionProvider.getOS();
         try {
             String output = "";
@@ -65,10 +70,10 @@ public final class StopDatabase {
                     output = "Os not detected";
                 }
             }
-            return output;
+            return CompletableFuture.completedFuture(output);
 
         } catch (Exception e) {
-            return e.getMessage();
+            return CompletableFuture.completedFuture(e.getMessage());
         }
     }
 }
