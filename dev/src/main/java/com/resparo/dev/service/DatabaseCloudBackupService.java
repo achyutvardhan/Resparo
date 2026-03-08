@@ -67,6 +67,12 @@ public class DatabaseCloudBackupService {
                 case DIFFERENTIAL -> {
                     switch (dbType) {
                         case POSTGRESQL -> {
+                            output = new ProcessExecutor()
+                                    .command("pgbackrest", "--stanza=main", "backup", "--type=diff")
+                                    .redirectOutput(System.out)
+                                    .redirectError(System.err)
+                                    .execute()
+                                    .getExitValue() == 0 ? "Backup successful" : "Backup failed";
                         }
                         case MYSQL -> {
                             output = "Diffferential backup is not available for MySql";
@@ -76,6 +82,12 @@ public class DatabaseCloudBackupService {
                 case INCREMENTAL -> {
                     switch (dbType) {
                         case POSTGRESQL -> {
+                            output = new ProcessExecutor()
+                                    .command("pgbackrest", "--stanza=main", "backup", "--type=incr")
+                                    .redirectOutput(System.out)
+                                    .redirectError(System.err)
+                                    .execute()
+                                    .getExitValue() == 0 ? "Backup successful" : "Backup failed";
                         }
                         case MYSQL -> {
                             output = "Incremental backup is not available for MySql";
