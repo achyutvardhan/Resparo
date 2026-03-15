@@ -1,9 +1,13 @@
 package com.resparo.dev.service;
 
 import java.io.FileInputStream;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.zeroturnaround.exec.ProcessExecutor;
 
@@ -13,6 +17,9 @@ import com.resparo.dev.util.StopDatabase;
 
 @Service
 public class FullRestoreDatabaseService {
+
+    @Autowired
+    private S3service s3service;
 
     public String fullRestoreDb(String dataBaseName, DatabaseType dbType, String Username, String host, String port,
             String optedBackupfile) {
@@ -167,6 +174,46 @@ public class FullRestoreDatabaseService {
             Files.writeString(Path.of(autoConf), content);
             System.out.println(StartDatabase.start("postgresql@18"));
             return "pgbackrest restore successfull";
+        } catch (Exception e) {
+            return e.getMessage();
+        }
+    }
+
+    public String cloudRestoreDb(String fileName, String dataBaseName, DatabaseType dbType, String Username,
+            String host, String port) {
+        try {
+
+            String output = "";
+            switch (dbType) {
+                case POSTGRESQL -> {
+                    try (InputStream inputStream = s3service.downloadFile(fileName)) {
+                        output = new ProcessExecutor()
+                                .command("pg_restore", "-U", Username, "-d", dataBaseName)
+                                .redirectInput(inputStream)
+                                .redirectOutput(System.out)
+                                .redirectError(System.err)
+                                .timeout(60, TimeUnit.MINUTES)
+                                .execute()
+                                .getExitValue() == 0 ? "Restore successful" : "Restore failed";
+                    }
+                }
+                case MYSQL -> {
+                    try (InputStream inputStream = s3service.downloadFile(fileName)) {
+                        output = new ProcessExecutor()
+                                .command("mysql", "-u", Username, "-p", dataBaseName)
+                                .redirectInput(inputStream)
+                                .redirectOutput(System.out)
+                                .redirectError(System.err)
+                                .timeout(60, TimeUnit.MINUTES)
+                                .execute()
+                                .getExitValue() == 0 ? "Restore successful" : "Restore failed";
+                    }
+                }
+            }
+            return output;
+
+        } catch (TimeoutException e) {
+            return "Restore timed out";
         } catch (Exception e) {
             return e.getMessage();
         }

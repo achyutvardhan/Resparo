@@ -1,16 +1,28 @@
 package com.resparo.dev.service;
 
 import java.io.InputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.zeroturnaround.exec.ProcessExecutor;
+import org.zeroturnaround.exec.ProcessResult;
+import org.zeroturnaround.exec.StartedProcess;
+import org.zeroturnaround.exec.stream.LogOutputStream;
 
 import com.resparo.dev.domain.BackupTypes;
 import com.resparo.dev.domain.DatabaseType;
 import com.resparo.dev.util.ConnectionProvider;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Service
+@Slf4j
 public class DatabaseCloudBackupService {
 
     @Autowired
@@ -25,41 +37,83 @@ public class DatabaseCloudBackupService {
             String user = connectionProvider.getUserName();
             switch (bkpType) {
                 case FULL -> {
+                    log.debug("Full");
                     switch (dbType) {
                         case POSTGRESQL -> {
                             String fileName = user + "_" + databaseName + "_" + System.currentTimeMillis() + ".dump";
-                            Process process = new ProcessExecutor()
-                                    .command("pg_dump", "-Fc", "-h", "localhost", "-U", user, databaseName)
-                                    .redirectErrorStream(true)
-                                    .start()
-                                    .getProcess();
-                            InputStream pgDumpStream = process.getInputStream();
+                            Path tempFile = Files.createTempFile("pgdump-", ".dump");
 
-                            output = s3service.cloudBackup(pgDumpStream, fileName);
-                            int exitCode = process.waitFor();
-                            if (exitCode != 0) {
-                                return "pg_dump process failed with exit code: " + exitCode;
+                            try {
+                                StartedProcess startedProcess = new ProcessExecutor()
+                                        .command("pg_dump", "-Fc", "-h", "localhost", "-U", user, databaseName)
+                                        .redirectOutput(Files.newOutputStream(tempFile)) // write directly to disk
+                                        .redirectError(new LogOutputStream() {
+                                            @Override
+                                            protected void processLine(String line) {
+                                                log.error("[pg_dump] {}", line);
+                                            }
+                                        })
+                                        .start();
+
+                                ProcessResult result = startedProcess.getFuture().get();
+
+                                if (result.getExitValue() != 0) {
+                                    return "pg_dump process failed with exit code: " + result.getExitValue();
+                                }
+
+                                log.info("pg_dump finished, file size: {} bytes", Files.size(tempFile));
+
+                                // Stream from stable temp file — no pipe issues at all
+                                try (InputStream fileStream = Files.newInputStream(tempFile)) {
+                                    output = s3service.cloudBackup(fileStream, fileName);
+                                }
+
+                            }catch(Exception e){
+                                log.error(e.getMessage());
+                            } finally {
+                                Files.deleteIfExists(tempFile); // always clean up
                             }
                         }
                         case MYSQL -> {
+                            log.debug("calls reaching the backupDb");
                             String[] username = user.split("@");
                             String fileName = username[0] + "_" + databaseName + "_" + System.currentTimeMillis()
                                     + ".sql";
-                            Process process = new ProcessExecutor()
-                                    .command("mysqldump",
-                                            "--single-transaction",
-                                            "-u", username[0],
-                                            "-p",
-                                            databaseName)
-                                    .redirectErrorStream(true)
-                                    .start()
-                                    .getProcess();
-                            InputStream mysqlDumpStream = process.getInputStream();
+                            Path tempFile = Files.createTempFile("mysqldump-", ".sql");
 
-                            output = s3service.cloudBackup(mysqlDumpStream, fileName);
-                            int exitCode = process.waitFor();
-                            if (exitCode != 0) {
-                                return "pg_dump process failed with exit code: " + exitCode;
+                            try {
+                                StartedProcess startedProcess = new ProcessExecutor()
+                                        .command("mysqldump",
+                                                "--single-transaction",
+                                                "--set-gtid-purged=OFF",
+                                                "-u", username[0],
+                                                "-p",
+                                                databaseName)
+                                        .redirectOutput(Files.newOutputStream(tempFile))
+                                        .redirectError(new LogOutputStream() {
+                                            @Override
+                                            protected void processLine(String line) {
+                                                log.error("[mysqldump] {}", line);
+                                            }
+                                        })
+                                        .start();
+
+                                ProcessResult result = startedProcess.getFuture().get();
+
+                                if (result.getExitValue() != 0) {
+                                    return "mysqldump process failed with exit code: " + result.getExitValue();
+                                }
+
+                                log.info("mysqldump finished, file size: {} bytes", Files.size(tempFile));
+
+                                try (InputStream fileStream = Files.newInputStream(tempFile)) {
+                                    output = s3service.cloudBackup(fileStream, fileName);
+                                }
+
+                            }catch(Exception e){
+                                log.error(e.getMessage());
+                            } finally {
+                                Files.deleteIfExists(tempFile);
                             }
                         }
                     }
