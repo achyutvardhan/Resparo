@@ -1,7 +1,5 @@
 package com.resparo.dev.command;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.shell.command.annotation.Command;
 import org.springframework.shell.command.annotation.Option;

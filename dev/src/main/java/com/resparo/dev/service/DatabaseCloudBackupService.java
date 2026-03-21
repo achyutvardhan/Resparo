@@ -37,7 +37,6 @@ public class DatabaseCloudBackupService {
             String user = connectionProvider.getUserName();
             switch (bkpType) {
                 case FULL -> {
-                    log.debug("Full");
                     switch (dbType) {
                         case POSTGRESQL -> {
                             String fileName = user + "_" + databaseName + "_" + System.currentTimeMillis() + ".dump";

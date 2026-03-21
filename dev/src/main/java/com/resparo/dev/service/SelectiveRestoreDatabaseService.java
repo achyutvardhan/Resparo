@@ -1,5 +1,8 @@
 package com.resparo.dev.service;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 import org.springframework.stereotype.Service;
 import org.zeroturnaround.exec.ProcessExecutor;
 
@@ -64,15 +67,25 @@ public class SelectiveRestoreDatabaseService {
             switch (dbTye) {
                 case POSTGRESQL -> {
                     System.out.println(StopDatabase.stop("postgresql@18"));
-                    output = new ProcessExecutor()
-                            .command("pgbackrest", "--stanza=" + stanza, "--type=time",
+                    int restoreExit = new ProcessExecutor()
+                            .command("pgbackrest", "--stanza=" + stanza, "--delta", "--type=time",
                                     "--target=" + time, "restore")
                             .redirectOutput(System.out)
                             .redirectError(System.err)
                             .execute()
-                            .getExitValue() == 0 ? "PITR Restore successful" : "PITR Restore failed";
+                            .getExitValue();
+                    if (restoreExit != 0) {
+                        throw new RuntimeException("PITR restore failed");
+                    }
+                    // Fix the bare path written by pgbackrest into postgresql.auto.conf
+                    String autoConf = "/opt/homebrew/var/postgresql@18/postgresql.auto.conf";
+                    String content = Files.readString(Path.of(autoConf));
+                    content = content.replace(
+                            "restore_command = 'pgbackrest",
+                            "restore_command = '/opt/homebrew/bin/pgbackrest");
+                    Files.writeString(Path.of(autoConf), content);
                     System.out.println(StartDatabase.start("postgresql@18"));
-
+                    output = "PITR restore successfully";
                 }
                 case MYSQL -> {
                     output = "PITR  Restoration is not available for MYSQL";

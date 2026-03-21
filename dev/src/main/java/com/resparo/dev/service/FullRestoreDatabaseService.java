@@ -165,7 +165,7 @@ public class FullRestoreDatabaseService {
                 throw new RuntimeException("pgbackrest restore failed");
             }
 
-            // 3. Fix the bare path written by pgbackrest into postgresql.auto.conf
+            // Fix the bare path written by pgbackrest into postgresql.auto.conf
             String autoConf = "/opt/homebrew/var/postgresql@18/postgresql.auto.conf";
             String content = Files.readString(Path.of(autoConf));
             content = content.replace(
